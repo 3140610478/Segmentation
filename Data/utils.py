@@ -33,13 +33,16 @@ def dilate(input: torch.Tensor, kernel_size, padding) -> torch.Tensor:
 def show_masks(img, masks, alpha=0.8):
     plt.figure(figsize=(20, 20))
     plt.imshow(img.permute(1, 2, 0).cpu().numpy())
+    num_classes, h, w = masks.shape
+    masks = masks.argmax(dim=0)
+    masks = F.one_hot(masks, num_classes=num_classes)
+    masks = masks.permute(2, 0, 1)
 
     ax = plt.gca()
     ax.set_autoscale_on(False)
-    h, w = masks.shape[-2:]
     img_masks = np.ones((h, w, 4))
     img_masks[:, :, 3] = 0
-    for m in masks:
+    for m in masks.cpu():
         color_mask = np.concatenate([np.random.random(3), [alpha]])
         img_masks[m.to(torch.bool)] = color_mask
     ax.imshow(img_masks)
