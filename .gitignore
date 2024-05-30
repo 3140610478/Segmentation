@@ -1,0 +1,17 @@
+# documents
+*.txt
+*.docx
+*.pdf
+# logs
+*.log
+# images
+*.html
+*.png
+# files for datasets
+*.zip
+/Data/**/
+# saved models & confusion matrices
+/Networks/**/
+/result
+# __pycache__
+/**/__pycache__/
