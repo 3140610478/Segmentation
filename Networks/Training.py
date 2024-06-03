@@ -58,7 +58,7 @@ class MIoU(torch.nn.Module):
         union = torch.logical_or(input_bin, target_bin)
         union = union.count_nonzero(dim=1).float()
 
-        mask = target_bin.any(dim=1)
+        mask = torch.logical_or(input_bin, target_bin).any(dim=1)
         miou = (intersection[mask] / union[mask]).mean()
         return miou
 

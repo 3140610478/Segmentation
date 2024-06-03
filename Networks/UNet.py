@@ -17,7 +17,7 @@ class ConvBlock(nn.Conv2d):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         nn.init.kaiming_normal_(self.weight)
-        self.norm = nn.BatchNorm2d(self.out_channels)
+        self.norm = nn.InstanceNorm2d(self.out_channels)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         y = super().forward(input)

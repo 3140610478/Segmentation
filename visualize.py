@@ -19,7 +19,7 @@ def read_training_log(filename):
     with open(os.path.abspath(os.path.join(log_folder, f"./{filename}"))) as log:
         lines = log.readlines()
     lines = lines[:lines.index("[confusion matrix]\n")]
-    best_epoch = int(lines[-2].strip().split()[-1])
+    best_epoch = int(lines[-1].strip().split()[-1])
     lines = [i.split("\t") for i in lines[4:-2] if i != "\n"]
     lines = [[j.rstrip().rstrip(",") for j in i] for i in lines if len(i) > 1]
     groups = ("train", "val", "test",)

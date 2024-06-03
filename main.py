@@ -31,22 +31,26 @@ def run(model, data, name=None):
     start_epoch = 0
     best = 0
     # warm-up epoch
-    logger.info("Warm-up")
-    best, start_epoch = Training.train_until(
-        model, data, logger, 0.1, optimizers[0.001], 0
+    # logger.info("Warm-up")
+    # best, start_epoch = Training.train_until(
+    #     model, data, logger, 0.1, optimizers[0.01], 0
+    # )
+    logger.info("learning_rate = 0.1")
+    best = Training.train_epoch_range(
+        model, data, logger, start_epoch, 80, optimizers[0.1], best
     )
     logger.info("learning_rate = 0.01")
     best = Training.train_epoch_range(
-        model, data, logger, start_epoch, 30, optimizers[0.01], best
+        model, data, logger, 80, 120, optimizers[0.01], best
     )
-    logger.info("learning_rate = 0.001")
-    best = Training.train_epoch_range(
-        model, data, logger, 30, 45, optimizers[0.001], best
-    )
-    logger.info("learning_rate = 0.0001")
-    best = Training.train_epoch_range(
-        model, data, logger, 45, 60, optimizers[0.0001], best
-    )
+    # logger.info("learning_rate = 0.001")
+    # best = Training.train_epoch_range(
+    #     model, data, logger, 100, 150, optimizers[0.001], best
+    # )
+    # logger.info("learning_rate = 0.0001")
+    # best = Training.train_epoch_range(
+    #     model, data, logger, 150, 200, optimizers[0.0001], best
+    # )
     cm = Training.test(model, data, logger)
 
     fig = go.Figure(
