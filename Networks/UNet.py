@@ -3,7 +3,6 @@ import sys
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torchvision.models._utils import IntermediateLayerGetter
 
 base_folder = os.path.abspath(os.path.join(
     os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -79,13 +78,18 @@ class UNet(nn.Sequential):
                 ),
                 ref_channels,
             )
-        mapping = nn.Conv2d(ref_channels, num_classes, 1, 1, 0)
-        softmax = nn.Softmax(dim=1)
-        super().__init__(UStructure, mapping, softmax)
+        if num_classes == 1:
+            mapping = nn.Conv2d(ref_channels, num_classes, 1, 1, 0)
+            sigmoid = nn.Sigmoid()
+            super().__init__(UStructure, mapping, sigmoid)
+        else:
+            mapping = nn.Conv2d(ref_channels, num_classes, 1, 1, 0)
+            softmax = nn.Softmax(dim=1)
+            super().__init__(UStructure, mapping, softmax)
 
 
 if __name__ == "__main__":
-    unet = UNet(3, 22).to("cuda")
+    unet = UNet(3, 1).to("cuda")
     print(str(unet))
     a = torch.zeros((16, 3, 384, 384)).to("cuda")
     while True:

@@ -5,6 +5,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # reload_data = True
 reload_data = False
+splitting = (0.8, 0.1, 0.1)
+seed = 42
 
 batch_size = 1
 

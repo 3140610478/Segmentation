@@ -10,15 +10,13 @@ if base_folder not in sys.path:
 if True:
     from Networks import Training
     from Networks.UNet import UNet
-    from Data import MSRC
+    from Data import Angioma
     from Log.Logger import getLogger
     import config
 
 def run(model, data, name=None):
     if not isinstance(name, str):
         name = f"{model.__class__.__name__}_on_{data.__name__.rsplit('.')[-1]}"
-    if config.sam["use_sam"]:
-        name += "_SAM"
 
     logger = getLogger(name)
 
@@ -37,19 +35,23 @@ def run(model, data, name=None):
     # )
     logger.info("learning_rate = 0.1")
     best = Training.train_epoch_range(
-        model, data, logger, start_epoch, 80, optimizers[0.1], best
+        model, data, logger, start_epoch, 50, optimizers[0.1], best
     )
     logger.info("learning_rate = 0.01")
     best = Training.train_epoch_range(
-        model, data, logger, 80, 120, optimizers[0.01], best
+        model, data, logger, 50, 100, optimizers[0.01], best
     )
-    # logger.info("learning_rate = 0.001")
-    # best = Training.train_epoch_range(
-    #     model, data, logger, 100, 150, optimizers[0.001], best
-    # )
+    logger.info("learning_rate = 0.001")
+    best = Training.train_epoch_range(
+        model, data, logger, 100, 150, optimizers[0.001], best
+    )
+    logger.info("learning_rate = 0.0001")
+    best = Training.train_epoch_range(
+        model, data, logger, 150, 200, optimizers[0.0001], best
+    )
     # logger.info("learning_rate = 0.0001")
     # best = Training.train_epoch_range(
-    #     model, data, logger, 150, 200, optimizers[0.0001], best
+    #     model, data, logger, 120, 150, optimizers[0.0001], best
     # )
     cm = Training.test(model, data, logger)
 
@@ -79,5 +81,5 @@ def run(model, data, name=None):
 
 
 if __name__ == "__main__":
-    run(UNet(3, 22).to(config.device), MSRC)
+    run(UNet(3, 1).to(config.device), Angioma)
     pass

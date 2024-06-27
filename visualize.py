@@ -12,7 +12,7 @@ if base_folder not in sys.path:
 if True:
     import config
     from Networks.UNet import UNet
-    from Data import MSRC
+    from Data import Angioma
 
 
 def read_training_log(filename):
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     folder = base_folder
     if not os.path.exists(folder):
         os.mkdir(folder)
-    model, dataset = UNet, MSRC
+    model, dataset = UNet, Angioma
     fig = make_subplots(
         rows=1, cols=2, subplot_titles=("[loss]", "[miou]"),
         horizontal_spacing=0.1,

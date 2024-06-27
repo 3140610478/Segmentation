@@ -31,12 +31,11 @@ class ConfusionMatrix(torch.nn.Module):
 
     def forward(self, input: torch.Tensor, target: torch.Tensor, eps=1e-8) -> torch.Tensor:
         # return in Matrix[n, c_target, c_predicted]
-        input_bin = F.one_hot(
-            torch.argmax(input, dim=1),
-            num_classes=input.shape[1],
-        ).permute(0, 3, 1, 2)
-        y = target.flatten(start_dim=2)
+        input_bin = (input > 0.5).float()
+        input_bin = torch.cat((input_bin, 1-input_bin), dim=1)
+        target_bin = torch.cat((target, 1-target), dim=1)
         h = input_bin.flatten(start_dim=2).float()
+        y = target_bin.flatten(start_dim=2)
         cm = y @ h.permute(0, 2, 1)
         cm = (cm / (y.sum(dim=2, keepdim=True) + eps)).mean(dim=0)
         return cm
@@ -47,19 +46,22 @@ class MIoU(torch.nn.Module):
         super().__init__()
 
     def forward(self, input: torch.Tensor, target: torch.Tensor, eps=1e-5) -> torch.Tensor:
-        input_bin = F.one_hot(
-            torch.argmax(input, dim=1),
-            num_classes=input.shape[1],
-        )
-        input_bin = input_bin.permute(3, 0, 1, 2).flatten(start_dim=1)
-        target_bin = target.bool().permute(1, 0, 2, 3).flatten(start_dim=1)
+        if input.shape[1] == 1:
+            input_bin = torch.cat((input, 1-input), dim=1) > 0.5
+        else:
+            input_bin = input > 0.5
+        if target.shape[1] == 1:
+            target_bin = torch.cat((target, 1-target), dim=1).bool()
+        else:
+            target_bin = target.bool()
+        input_bin = input_bin.permute(1, 0, 2, 3).flatten(start_dim=1)
+        target_bin = target_bin.permute(1, 0, 2, 3).flatten(start_dim=1)
         intersection = torch.logical_and(input_bin, target_bin)
         intersection = intersection.count_nonzero(dim=1).float()
         union = torch.logical_or(input_bin, target_bin)
         union = union.count_nonzero(dim=1).float()
 
-        mask = torch.logical_or(input_bin, target_bin).any(dim=1)
-        miou = (intersection[mask] / union[mask]).mean()
+        miou = (intersection / union).mean()
         return miou
 
 
@@ -201,10 +203,6 @@ def test(
         (data.NUM_CLASSES, data.NUM_CLASSES),
         device=config.device
     )
-    test_cnt = torch.zeros(
-        (data.NUM_CLASSES,),
-        device=config.device
-    )
 
     model.eval()
     print("\nTesting:")
@@ -220,10 +218,9 @@ def test(
         test_loss += len(y)*(float(loss))
         test_miou += len(y)*(float(miou))
         test_cm += len(y)*cm
-        test_cnt += len(y)*cm.sum(dim=1)
     test_loss /= data.len_test
     test_miou /= data.len_test
-    test_cm /= test_cnt.unsqueeze(1)
+    test_cm /= data.len_test
 
     print("")
     logger.info(message.format(test_loss, test_miou))
